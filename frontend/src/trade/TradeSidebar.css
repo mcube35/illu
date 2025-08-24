@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer components {
+
+  /* Sidebar */
+  .sidebar {
+    @apply fixed right-0 top-0 h-screen w-72 bg-black text-gray-100 flex flex-col shadow-xl;
+  }
+
+  .sidebar-header {
+    @apply p-6 text-xl font-semibold border-b border-lime-700 flex items-center justify-between;
+  }
+
+  .sidebar-version {
+    @apply text-xs text-lime-400;
+  }
+
+  .sidebar-form {
+    @apply flex-1 p-4 space-y-5;
+  }
+
+  .sidebar-input,
+  .sidebar-select {
+    @apply w-full p-2 rounded-md border border-lime-700 bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lime-400;
+  }
+
+  .sidebar-input:disabled,
+  .sidebar-select:disabled {
+    @apply bg-gray-900 text-gray-500 border-gray-600;
+  }
+
+  .sidebar-buttons {
+    @apply p-4 flex justify-end;
+  }
+
+  .sidebar-buttons button {
+    @apply px-4 py-2 rounded-md font-semibold transition bg-gray-700 text-gray-200;
+  }
+
+  .sidebar-buttons button:hover {
+    @apply bg-lime-600 text-white;
+  }
+}
