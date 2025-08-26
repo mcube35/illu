@@ -7,5 +7,6 @@ public record TradeConfigRequest(
         String apiKey,
         String apiSecret,
         BigDecimal longInputPct,
-        BigDecimal shortInputPct
+        BigDecimal shortInputPct,
+        Boolean isRunning
 ) {}

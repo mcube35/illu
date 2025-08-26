@@ -27,4 +27,7 @@ public class TradeConfig {
 
     private BigDecimal longInputPct;
     private BigDecimal shortInputPct;
+
+    @Column(name = "is_running", nullable = false)
+    private Boolean isRunning;
 }

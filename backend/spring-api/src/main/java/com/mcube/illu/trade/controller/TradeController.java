@@ -2,7 +2,6 @@ package com.mcube.illu.trade.controller;
 
 import com.mcube.illu.trade.dto.TradeConfigRequest;
 import com.mcube.illu.trade.dto.TradeConfigResponse;
-import com.mcube.illu.trade.entity.TradeConfig;
 import com.mcube.illu.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/trade")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class TradeController {
     private final TradeService tradeService;
 

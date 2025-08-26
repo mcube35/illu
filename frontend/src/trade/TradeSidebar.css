@@ -30,7 +30,8 @@
   }
 
   .sidebar-buttons {
-    @apply p-4 flex justify-end;
+    @apply p-4 flex justify-between;
+    @apply space-x-2;
   }
 
   .sidebar-buttons button {

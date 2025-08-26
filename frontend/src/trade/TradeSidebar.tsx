@@ -8,6 +8,7 @@ type TradeConfig = {
   apiSecret: string;
   longInputPct: number;
   shortInputPct: number;
+  isRunning: boolean;
 }
 
 export default function TradeSidebar() {
@@ -18,6 +19,7 @@ export default function TradeSidebar() {
     apiSecret: "",
     longInputPct: 0,
     shortInputPct: 0,
+    isRunning: false,
   });
 
   useEffect(() => {
@@ -27,20 +29,38 @@ export default function TradeSidebar() {
       .catch((err) => console.error("Failed to fetch config:", err));
   }, []);
 
-  const handleSave = async () => {
+  const saveConfig = async (
+    configData: TradeConfig,
+    successMsg: string,
+    errorMsg: string
+  ) => {
     try {
       const res = await fetch(`${API_URL}/api/trade/config`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify(configData),
       });
-      if (!res.ok) throw new Error("Save failed");
-      setIsEditing(false);
-      alert("저장 성공!");
-    } catch (err) {
-      console.error(err);
-      alert("저장 실패");
+      if (!res.ok) throw new Error();
+      setConfig(configData);
+      alert(successMsg);
+    } catch {
+      alert(errorMsg);
     }
+  };
+
+  // 저장 버튼
+  const handleSave = () => {
+    saveConfig(config, "저장 성공!", "저장 실패");
+  };
+
+  // 실행/중지 버튼
+  const handleToggle = () => {
+    const updated = { ...config, isRunning: !config.isRunning };
+    saveConfig(
+      updated,
+      updated.isRunning ? "실행 시작!" : "실행 중지!",
+      "실행/중지 실패"
+    );
   };
 
   return (
@@ -77,7 +97,6 @@ export default function TradeSidebar() {
             }
           />
         </label>
-
 
         {/* API Secret */}
         <label>
@@ -123,7 +142,6 @@ export default function TradeSidebar() {
             }
           />
         </label>
-
       </div>
 
       <div className="sidebar-buttons">
@@ -132,6 +150,14 @@ export default function TradeSidebar() {
         ) : (
           <button onClick={handleSave}>저장</button>
         )}
+
+        {/* 실행/중지 버튼 */}
+        <button
+          className={config.isRunning ? "stop-btn" : "start-btn"}
+          onClick={handleToggle}
+        >
+          {config.isRunning ? "중지" : "실행"}
+        </button>
       </div>
     </aside>
   );
