@@ -52,13 +52,22 @@ public class TradeService {
     }
 
     public TradeConfigResponse updateConfig(TradeConfigRequest e) {
-        TradeConfig entity = tradeConfigRepository.findByUserId(getDummyUserId());
+        Long userId = getDummyUserId();
+        TradeConfig entity = tradeConfigRepository.findByUserId(userId);
         entity.setExchange(e.exchange());
         entity.setApiKey(e.apiKey());
         entity.setApiSecret(e.apiSecret());
         entity.setLongInputPct(e.longInputPct());
         entity.setShortInputPct(e.shortInputPct());
         entity.setIsRunning(e.isRunning());
+
+        String action = "";
+        if entity.isRunning() {
+            action = "start";
+        } else {
+            action = "stop";
+        }
+        sendTradingCommandAsync(userId.toString(), action);
         return toResponse(tradeConfigRepository.save(entity));
     }
 
