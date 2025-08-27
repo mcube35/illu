@@ -7,24 +7,13 @@ import com.mcube.illu.trade.repository.TradeConfigRepository;
 import com.mcube.illu.user.entity.User;
 import com.mcube.illu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class TradeService {
     private final TradeConfigRepository tradeConfigRepository;
     private final UserRepository userRepository;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final String pythonUrl = "http://localhost:8000/trade/okx_auto";
 
     private Long getDummyUserId() {
         return 1L;
@@ -43,6 +32,7 @@ public class TradeService {
                 .exchange(req.exchange())
                 .apiKey(req.apiKey())
                 .apiSecret(req.apiSecret())
+                .passphrase(req.passphrase())
                 .longInputPct(req.longInputPct())
                 .shortInputPct(req.shortInputPct())
                 .isRunning(req.isRunning())
@@ -57,25 +47,18 @@ public class TradeService {
         entity.setExchange(e.exchange());
         entity.setApiKey(e.apiKey());
         entity.setApiSecret(e.apiSecret());
+        entity.setPassphrase(e.passphrase());
         entity.setLongInputPct(e.longInputPct());
         entity.setShortInputPct(e.shortInputPct());
         entity.setIsRunning(e.isRunning());
 
-        String action = "";
-        if entity.isRunning() {
-            action = "start";
-        } else {
-            action = "stop";
-        }
-        sendTradingCommandAsync(userId.toString(), action);
         return toResponse(tradeConfigRepository.save(entity));
     }
 
     public void deleteConfig() {
         Long userId = getDummyUserId();
-        TradeConfig e = tradeConfigRepository.findByUserId(userId);
-        tradeConfigRepository.deleteById(e.getId());
-        sendTradingCommandAsync(userId.toString(), "stop");
+        TradeConfig entity = tradeConfigRepository.findByUserId(userId);
+        tradeConfigRepository.deleteById(entity.getId());
     }
 
     private TradeConfigResponse toResponse(TradeConfig config) {
@@ -83,29 +66,10 @@ public class TradeService {
                 config.getExchange(),
                 config.getApiKey(),
                 config.getApiSecret(),
+                config.getPassphrase(),
                 config.getLongInputPct(),
                 config.getShortInputPct(),
                 config.getIsRunning()
         );
-    }
-
-    @Async
-    public void sendTradingCommandAsync(String userId, String action) {
-        Map<String, String> requestBody = Map.of(
-                "user_id", userId,
-                "action", action
-        );
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(pythonUrl, request, String.class);
-            System.out.println("Python response: " + response.getBody());
-        } catch (Exception e) {
-            System.err.println("Failed to send trading command: " + e.getMessage());
-        }
     }
 }

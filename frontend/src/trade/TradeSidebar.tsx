@@ -6,6 +6,7 @@ type TradeConfig = {
   exchange: string;
   apiKey: string;
   apiSecret: string;
+  passphrase: string;
   longInputPct: number;
   shortInputPct: number;
   isRunning: boolean;
@@ -17,17 +18,12 @@ export default function TradeSidebar() {
     exchange: "",
     apiKey: "",
     apiSecret: "",
+    passphrase: "",
     longInputPct: 0,
     shortInputPct: 0,
     isRunning: false,
   });
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/trade/config`)
-      .then((res) => res.json())
-      .then((data: TradeConfig) => setConfig(data))
-      .catch((err) => console.error("Failed to fetch config:", err));
-  }, []);
 
   const saveConfig = async (
     configData: TradeConfig,
@@ -48,15 +44,31 @@ export default function TradeSidebar() {
     }
   };
 
+  const reloadConfig = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/trade/config`);
+      if (!res.ok) throw new Error();
+      const data: TradeConfig = await res.json();
+      setConfig(data);
+    } catch (err) {
+      console.error("Failed to reload config:", err);
+    }
+  };
+
+  useEffect(() => {
+    reloadConfig();
+  }, []);
+
   // 저장 버튼
-  const handleSave = () => {
-    saveConfig(config, "저장 성공!", "저장 실패");
+  const handleSave = async () => {
+    await saveConfig(config, "저장 성공!", "저장 실패");
+    setIsEditing(false)
   };
 
   // 실행/중지 버튼
-  const handleToggle = () => {
+  const handleToggle = async () => {
     const updated = { ...config, isRunning: !config.isRunning };
-    saveConfig(
+    await saveConfig(
       updated,
       updated.isRunning ? "실행 시작!" : "실행 중지!",
       "실행/중지 실패"
@@ -108,6 +120,20 @@ export default function TradeSidebar() {
             value={config.apiSecret}
             onChange={(e) =>
               setConfig({ ...config, apiSecret: e.target.value })
+            }
+          />
+        </label>
+
+        {/* API passphrase */}
+        <label>
+          API Passphrase
+          <input
+            type="password"
+            className="sidebar-input"
+            disabled={!isEditing}
+            value={config.passphrase}
+            onChange={(e) =>
+              setConfig({ ...config, passphrase: e.target.value })
             }
           />
         </label>

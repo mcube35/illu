@@ -9,7 +9,7 @@ class BinanceClient:
         
     def get_candles(self) -> pd.DataFrame:
         columns = ['ts','o','h','l','c','vol','close_time','quote_asset_vol','trades','taker_base_vol','taker_quote_vol','ignore']
-        res = self.client.get_klines(symbol='BTCUSDT', interval='15m', limit=50)
+        res = self.client.get_historical_klines(symbol='BTCUSDT', interval='15m', limit=60)
         candle = pd.DataFrame(res, columns=columns).sort_values('ts')
         
         obj_cols = candle.select_dtypes(include=['object']).columns

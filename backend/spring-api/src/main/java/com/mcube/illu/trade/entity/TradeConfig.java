@@ -24,6 +24,7 @@ public class TradeConfig {
     private String exchange;
     private String apiKey;
     private String apiSecret;
+    private String passphrase;
 
     private BigDecimal longInputPct;
     private BigDecimal shortInputPct;
