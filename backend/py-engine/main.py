@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
 import json
 from fastapi import FastAPI
 import binance_client
@@ -23,6 +24,7 @@ def get_conn():
 
 TRADE_CONFIGS = {}
 OKX_FLAG = '1' # live trading: 0, demo trading: 1
+INST_ID = "BTC-USDT-SWAP"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,14 +56,14 @@ def open_position(trade_api: TradeAPI, side: str, size: float):
     side: "long" or "short"
     """
     result = trade_api.place_order(
-        instId="BTC-USDT-SWAP",
+        instId=INST_ID,
         tdMode="isolated",
         side="buy" if side == "long" else "sell",
         posSide=side,
         ordType="market",
-        sz=str(size)
+        sz=str(size),
     )
-    print(result)
+    print(f'open_position: {result}')
     return result
 
 
@@ -71,7 +73,7 @@ def close_position(acc_api: AccountAPI, trade_api: TradeAPI, side: str):
     side: "long" or "short"
     """
     # 1. 현재 포지션 조회
-    res = acc_api.get_positions(instId="BTC-USDT-SWAP")
+    res = acc_api.get_positions(instId=INST_ID)
     positions = res.get("data", []) if isinstance(res, dict) else []
 
     # 2. 해당 방향 포지션 찾기
@@ -85,19 +87,21 @@ def close_position(acc_api: AccountAPI, trade_api: TradeAPI, side: str):
 
     # 4. 시장가 청산 주문
     result = trade_api.place_order(
-        instId="BTC-USDT-SWAP",
+        instId=INST_ID,
         tdMode="isolated",
         side="sell" if side == "long" else "buy",
         posSide=side,
         ordType="market",
         sz=str(sz)
     )
-    print(result)
-    return result.get("code") == "0"
+    print(f'close_position: {result}')
+    return result
 
 def to_config(row) -> OkxTrade:
     config_id = row['id']
     config = TRADE_CONFIGS.get(config_id, OkxTrade())
+    
+    config.config_id = config_id
     
     config.long_input_pct = row['long_input_pct']
     config.short_input_pct = row['short_input_pct']
@@ -142,29 +146,54 @@ async def okx_auto_loop():
     while True:
         now = datetime.now()
         # 15분 단위 정각 (예: 10:00:00, 10:15:00 ...)
-        if now.second % 10 == 0:
-        # if now.minute % 15 == 0 and now.second == 0:
+        # if now.second % 10 == 0:
+        if now.minute % 15 == 0 and now.second == 0:
             # 시그널 가져오기
             data = client.signal()
             signal = data['signal'].iloc[-1]
 
             rows = get_running_rows()
-            
             for row in rows:
                 config = to_config(row)
                 
-                res = config.account_api.get_positions(instId="BTC-USDT-SWAP")
+                res = config.account_api.get_positions(instId=INST_ID)
                 positions = res.get("data", []) if isinstance(res, dict) else []
                 has_position = any(float(p.get('pos', 0)) > 0 for p in positions)
+                leverage = float(config.account_api.get_leverage(instId=INST_ID, mgnMode="isolated")['data'][0]['lever'])
                 
                 if has_position:
                     for p in positions:
-                        print(p['posSide'], p['pos'])
+                        pnl = float(p['uplRatioLastPx']) * 100 # last price기준으로 pnl계산
+                        profit_threshold = 0.5 * leverage
+                        lose_threshold = -0.5 * leverage
+                        
+                        if pnl > profit_threshold or pnl < lose_threshold:
+                            result = close_position(acc_api=config.account_api, trade_api=config.trade_api, side=p['posSide'])
+                            if result['code'] == '0':
+                                await asyncio.sleep(1)
+                                
+                                p_history = config.account_api.get_positions_history(instId=INST_ID)
+                                p_data = p_history['data'][0]
+                                c_time = p_data['cTime']
+                                u_time = p_data['uTime']
+                                pnl = Decimal(p_data['realizedPnl'])
+                                pnl_ratio = Decimal(p_data['pnlRatio']) * 100
+                                
+                                with get_conn().cursor() as cur:
+                                    cur.execute("""
+                                        INSERT INTO trade_history (c_time, u_time, pnl, pnl_ratio)
+                                        VALUES (%s, %s, %s, %s)
+                                    """, (c_time, u_time, pnl, pnl_ratio))
                 else:
+                    max_size = config.account_api.get_max_order_size(instId=INST_ID, tdMode='isolated')
+
+                    max_buy = float(max_size['data'][0]['maxBuy'])
+                    max_sell = float(max_size['data'][0]['maxSell'])
+
                     if signal == 1:
-                        open_position(trade_api=config.trade_api, side="long", size=1)
+                        open_position(trade_api=config.trade_api, side="long", size=max_buy)
                     elif signal == -1:
-                        open_position(trade_api=config.trade_api, side="short", size=1)
+                        open_position(trade_api=config.trade_api, side="short", size=max_sell)
 
             # 이미 실행했으니 같은 초에서 여러 번 실행되지 않게 대기
             await asyncio.sleep(3)

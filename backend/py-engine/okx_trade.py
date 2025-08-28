@@ -8,3 +8,4 @@ class OkxTrade:
         self.short_input_pct = Decimal(0)
         self.trade_api: TradeAPI = None
         self.account_api: AccountAPI = None
+        self.config_id: int = -1
