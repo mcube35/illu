@@ -1,10 +1,10 @@
 package com.mcube.illu.trade.entity;
 
+import com.mcube.illu.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Entity
 @Setter
@@ -17,6 +17,10 @@ public class TradeHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private String cTime; // 매수 시점 (cTime)

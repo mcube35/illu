@@ -4,6 +4,7 @@ import com.mcube.illu.trade.dto.TradeConfigRequest;
 import com.mcube.illu.trade.dto.TradeConfigResponse;
 import com.mcube.illu.trade.entity.TradeConfig;
 import com.mcube.illu.trade.repository.TradeConfigRepository;
+import com.mcube.illu.trade.repository.TradeHistoryRepository;
 import com.mcube.illu.user.entity.User;
 import com.mcube.illu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TradeService {
     private final TradeConfigRepository tradeConfigRepository;
+    private final TradeHistoryRepository tradeHistoryRepository;
     private final UserRepository userRepository;
 
     private Long getDummyUserId() {

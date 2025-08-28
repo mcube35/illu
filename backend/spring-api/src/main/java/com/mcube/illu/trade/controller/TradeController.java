@@ -2,6 +2,7 @@ package com.mcube.illu.trade.controller;
 
 import com.mcube.illu.trade.dto.TradeConfigRequest;
 import com.mcube.illu.trade.dto.TradeConfigResponse;
+import com.mcube.illu.trade.entity.TradeHistory;
 import com.mcube.illu.trade.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -32,4 +33,5 @@ public class TradeController {
     public void deleteConfig() {
         tradeService.deleteConfig();
     }
+
 }
