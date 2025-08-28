@@ -2,12 +2,9 @@ package com.mcube.illu.trade.dto;
 
 import java.math.BigDecimal;
 
-public record TradeConfigResponse(
-        String exchange,
-        String apiKey,
-        String apiSecret,
-        String passphrase,
-        BigDecimal longInputPct,
-        BigDecimal shortInputPct,
-        Boolean isRunning
+public record TradeHistoryResponse(
+        BigDecimal pnl,
+        BigDecimal pnlRatio,
+        String ctime,
+        String utime
 ) {}

@@ -2,13 +2,17 @@ package com.mcube.illu.trade.service;
 
 import com.mcube.illu.trade.dto.TradeConfigRequest;
 import com.mcube.illu.trade.dto.TradeConfigResponse;
+import com.mcube.illu.trade.dto.TradeHistoryResponse;
 import com.mcube.illu.trade.entity.TradeConfig;
+import com.mcube.illu.trade.entity.TradeHistory;
 import com.mcube.illu.trade.repository.TradeConfigRepository;
 import com.mcube.illu.trade.repository.TradeHistoryRepository;
 import com.mcube.illu.user.entity.User;
 import com.mcube.illu.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +26,14 @@ public class TradeService {
     }
 
     public TradeConfigResponse getConfig() {
-        return toResponse(tradeConfigRepository.findByUserId(getDummyUserId()));
+        return toConfigResponse(tradeConfigRepository.findByUserId(getDummyUserId()));
+    }
+
+    public List<TradeHistoryResponse> getHistory() {
+        return tradeHistoryRepository.findByUserId(getDummyUserId())
+                .stream()
+                .map(this::toHistoryResponse)
+                .toList();
     }
 
     public TradeConfigResponse createConfig(TradeConfigRequest req) {
@@ -40,7 +51,7 @@ public class TradeService {
                 .isRunning(req.isRunning())
                 .build()
         );
-        return toResponse(saved);
+        return toConfigResponse(saved);
     }
 
     public TradeConfigResponse updateConfig(TradeConfigRequest e) {
@@ -54,7 +65,7 @@ public class TradeService {
         entity.setShortInputPct(e.shortInputPct());
         entity.setIsRunning(e.isRunning());
 
-        return toResponse(tradeConfigRepository.save(entity));
+        return toConfigResponse(tradeConfigRepository.save(entity));
     }
 
     public void deleteConfig() {
@@ -63,15 +74,24 @@ public class TradeService {
         tradeConfigRepository.deleteById(entity.getId());
     }
 
-    private TradeConfigResponse toResponse(TradeConfig config) {
+    private TradeConfigResponse toConfigResponse(TradeConfig entity) {
         return new TradeConfigResponse(
-                config.getExchange(),
-                config.getApiKey(),
-                config.getApiSecret(),
-                config.getPassphrase(),
-                config.getLongInputPct(),
-                config.getShortInputPct(),
-                config.getIsRunning()
+                entity.getExchange(),
+                entity.getApiKey(),
+                entity.getApiSecret(),
+                entity.getPassphrase(),
+                entity.getLongInputPct(),
+                entity.getShortInputPct(),
+                entity.getIsRunning()
+        );
+    }
+
+    private TradeHistoryResponse toHistoryResponse(TradeHistory entity) {
+        return new TradeHistoryResponse(
+                entity.getPnl(),
+                entity.getPnlRatio(),
+                entity.getCTime(),
+                entity.getUTime()
         );
     }
 }

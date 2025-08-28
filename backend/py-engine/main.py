@@ -102,6 +102,7 @@ def to_config(row) -> OkxTrade:
     config = TRADE_CONFIGS.get(config_id, OkxTrade())
     
     config.config_id = config_id
+    config.user_id = row['user_id']
     
     config.long_input_pct = row['long_input_pct']
     config.short_input_pct = row['short_input_pct']
@@ -146,11 +147,12 @@ async def okx_auto_loop():
     while True:
         now = datetime.now()
         # 15분 단위 정각 (예: 10:00:00, 10:15:00 ...)
-        # if now.second % 10 == 0:
-        if now.minute % 15 == 0 and now.second == 0:
+        if now.second % 10 == 0:
+        # if now.minute % 15 == 0 and now.second == 0:
             # 시그널 가져오기
             data = client.signal()
             signal = data['signal'].iloc[-1]
+            signal = 1
 
             rows = get_running_rows()
             for row in rows:
@@ -167,7 +169,7 @@ async def okx_auto_loop():
                         profit_threshold = 0.5 * leverage
                         lose_threshold = -0.5 * leverage
                         
-                        if pnl > profit_threshold or pnl < lose_threshold:
+                        if pnl > profit_threshold or pnl < lose_threshold or True:
                             result = close_position(acc_api=config.account_api, trade_api=config.trade_api, side=p['posSide'])
                             if result['code'] == '0':
                                 await asyncio.sleep(1)
@@ -181,14 +183,14 @@ async def okx_auto_loop():
                                 
                                 with get_conn().cursor() as cur:
                                     cur.execute("""
-                                        INSERT INTO trade_history (c_time, u_time, pnl, pnl_ratio)
-                                        VALUES (%s, %s, %s, %s)
-                                    """, (c_time, u_time, pnl, pnl_ratio))
+                                        INSERT INTO trade_history (c_time, u_time, pnl, pnl_ratio, user_id)
+                                        VALUES (%s, %s, %s, %s, %s)
+                                    """, (c_time, u_time, pnl, pnl_ratio, config.user_id))
                 else:
                     max_size = config.account_api.get_max_order_size(instId=INST_ID, tdMode='isolated')
 
-                    max_buy = float(max_size['data'][0]['maxBuy'])
-                    max_sell = float(max_size['data'][0]['maxSell'])
+                    max_buy = int(float(max_size['data'][0]['maxBuy']) * 0.9)
+                    max_sell = int(float(max_size['data'][0]['maxSell']) * 0.9)
 
                     if signal == 1:
                         open_position(trade_api=config.trade_api, side="long", size=max_buy)
