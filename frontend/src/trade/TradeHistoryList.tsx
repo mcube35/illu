@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { API_URL } from "../const.ts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface TradeHistory {
   pnl: number;
@@ -24,32 +32,38 @@ const TradeHistoryList: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Trade History</h1>
-      <table className="min-w-full border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">PNL</th>
-            <th className="p-2 border">PNL Ratio</th>
-            <th className="p-2 border">매수 시점</th>
-            <th className="p-2 border">매도 시점</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((h, i) => (
-            <tr key={i} className="text-center">
-              <td className={`p-2 border ${h.pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {h.pnl.toFixed(2)}
-              </td>
-              <td className={`p-2 border ${h.pnlRatio >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {h.pnlRatio.toFixed(2)}%
-              </td>
-              <td className="p-2 border">{formatDate(h.ctime)}</td>
-              <td className="p-2 border">{formatDate(h.utime)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">Trade History</h1>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>PNL</TableHead>
+              <TableHead>PNL Ratio</TableHead>
+              <TableHead>매수 시점</TableHead>
+              <TableHead>매도 시점</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {history.length > 0 ? (
+              history.map((h, i) => (
+                <TableRow key={i}>
+                  <TableCell>{h.pnl.toFixed(2)}</TableCell>
+                  <TableCell>{h.pnlRatio.toFixed(2)}%</TableCell>
+                  <TableCell>{formatDate(h.ctime)}</TableCell>
+                  <TableCell>{formatDate(h.utime)}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="h-24 text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

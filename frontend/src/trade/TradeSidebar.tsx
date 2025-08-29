@@ -2,7 +2,15 @@ import { useState, useEffect } from 'react';
 import { API_URL } from "../const.ts";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
 
 type TradeConfig = {
   exchange: string;
@@ -78,27 +86,30 @@ export default function TradeSidebar() {
   };
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
+    <Sidebar side='right' className='w-100'>
+      <SidebarHeader>
         BTC TRADE CONFIG
-        <span className="sidebar-version">v1.0</span>
-      </div>
+      </SidebarHeader>
 
-      <div className="sidebar-form">
+      <SidebarContent className="space-y-4">
         {/* Exchange */}
-        <select
+        <Select
           disabled={!isEditing}
           value={config.exchange}
-          onChange={(e) =>
-            setConfig({ ...config, exchange: e.target.value })
+          onValueChange={(value) =>
+            setConfig({ ...config, exchange: value })
           }
         >
-          <option value="">Select Exchange</option>
-          <option value="OKX">OKX</option>
-        </select>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Exchange" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="OKX">OKX</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* API Key */}
-        <label>
+        <Label>
           API KEY
           <Input
             type="password"
@@ -108,10 +119,10 @@ export default function TradeSidebar() {
               setConfig({ ...config, apiKey: e.target.value })
             }
           />
-        </label>
+        </Label>
 
         {/* API Secret */}
-        <label>
+        <Label>
           API SECRET
           <Input
             type="password"
@@ -121,10 +132,10 @@ export default function TradeSidebar() {
               setConfig({ ...config, apiSecret: e.target.value })
             }
           />
-        </label>
+        </Label>
 
         {/* API passphrase */}
-        <label>
+        <Label>
           API Passphrase
           <Input
             type="password"
@@ -134,10 +145,10 @@ export default function TradeSidebar() {
               setConfig({ ...config, passphrase: e.target.value })
             }
           />
-        </label>
+        </Label>
 
         {/* Long % */}
-        <label>
+        <Label>
           Long %
           <Input
             type="number"
@@ -148,10 +159,10 @@ export default function TradeSidebar() {
               setConfig({ ...config, longInputPct: Number(e.target.value) })
             }
           />
-        </label>
+        </Label>
 
         {/* Short % */}
-        <label>
+        <Label>
           Short %
           <Input
             type="number"
@@ -163,10 +174,10 @@ export default function TradeSidebar() {
               setConfig({ ...config, shortInputPct: Number(e.target.value) })
             }
           />
-        </label>
-      </div>
+        </Label>
+       </SidebarContent>
 
-      <div className="sidebar-buttons">
+      <SidebarFooter>
         {!isEditing ? (
           <Button onClick={() => setIsEditing(true)}>수정</Button>
         ) : (
@@ -180,7 +191,7 @@ export default function TradeSidebar() {
         >
           {config.isRunning ? "중지" : "실행"}
         </Button>
-      </div>
-    </aside>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
