@@ -1,0 +1,12 @@
+@import "tailwindcss";
+/* 
+@layer components {
+
+  .LoginFrame {
+    @apply flex gap-2 justify-center items-center min-h-screen;
+  }
+
+  .LoginForm {
+    @apply m-auto;
+  }
+} */

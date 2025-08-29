@@ -31,8 +31,8 @@ const TradeHistoryList: React.FC = () => {
           <tr className="bg-gray-100">
             <th className="p-2 border">PNL</th>
             <th className="p-2 border">PNL Ratio</th>
-            <th className="p-2 border">Created</th>
-            <th className="p-2 border">Updated</th>
+            <th className="p-2 border">매수 시점</th>
+            <th className="p-2 border">매도 시점</th>
           </tr>
         </thead>
         <tbody>

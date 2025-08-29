@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import './TradeSidebar.css';
 import { API_URL } from "../const.ts";
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 
 type TradeConfig = {
   exchange: string;
@@ -85,7 +87,6 @@ export default function TradeSidebar() {
       <div className="sidebar-form">
         {/* Exchange */}
         <select
-          className="sidebar-select"
           disabled={!isEditing}
           value={config.exchange}
           onChange={(e) =>
@@ -99,9 +100,8 @@ export default function TradeSidebar() {
         {/* API Key */}
         <label>
           API KEY
-          <input
+          <Input
             type="password"
-            className="sidebar-input"
             disabled={!isEditing}
             value={config.apiKey}
             onChange={(e) =>
@@ -113,9 +113,8 @@ export default function TradeSidebar() {
         {/* API Secret */}
         <label>
           API SECRET
-          <input
+          <Input
             type="password"
-            className="sidebar-input"
             disabled={!isEditing}
             value={config.apiSecret}
             onChange={(e) =>
@@ -127,9 +126,8 @@ export default function TradeSidebar() {
         {/* API passphrase */}
         <label>
           API Passphrase
-          <input
+          <Input
             type="password"
-            className="sidebar-input"
             disabled={!isEditing}
             value={config.passphrase}
             onChange={(e) =>
@@ -141,10 +139,9 @@ export default function TradeSidebar() {
         {/* Long % */}
         <label>
           Long %
-          <input
+          <Input
             type="number"
             step="0.01"
-            className="sidebar-input"
             disabled={!isEditing}
             value={config.longInputPct}
             onChange={(e) =>
@@ -156,11 +153,10 @@ export default function TradeSidebar() {
         {/* Short % */}
         <label>
           Short %
-          <input
+          <Input
             type="number"
             step="0.01"
             placeholder="Short %"
-            className="sidebar-input"
             disabled={!isEditing}
             value={config.shortInputPct}
             onChange={(e) =>
@@ -172,18 +168,18 @@ export default function TradeSidebar() {
 
       <div className="sidebar-buttons">
         {!isEditing ? (
-          <button onClick={() => setIsEditing(true)}>수정</button>
+          <Button onClick={() => setIsEditing(true)}>수정</Button>
         ) : (
-          <button onClick={handleSave}>저장</button>
+          <Button onClick={handleSave}>저장</Button>
         )}
 
         {/* 실행/중지 버튼 */}
-        <button
+        <Button
           className={config.isRunning ? "stop-btn" : "start-btn"}
           onClick={handleToggle}
         >
           {config.isRunning ? "중지" : "실행"}
-        </button>
+        </Button>
       </div>
     </aside>
   );
